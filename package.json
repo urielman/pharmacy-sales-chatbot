@@ -1,0 +1,36 @@
+{
+  "name": "pharmacy-sales-chatbot",
+  "version": "1.0.0",
+  "description": "Inbound Pharmacy Sales Chatbot with LLM + API Integration",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "dev": "docker-compose up --build",
+    "dev:backend": "cd backend && npm run start:dev",
+    "dev:frontend": "cd frontend && npm start",
+    "build": "cd backend && npm run build && cd ../frontend && npm run build",
+    "test": "cd backend && npm test",
+    "test:e2e": "cd backend && npm run test:e2e",
+    "db:migrate": "cd backend && npm run migration:up",
+    "db:seed": "cd backend && npm run db:seed",
+    "lint": "cd backend && npm run lint && cd ../frontend && npm run lint",
+    "clean": "rm -rf backend/dist backend/node_modules frontend/build frontend/node_modules node_modules",
+    "deploy": "sst deploy --stage production",
+    "deploy:dev": "sst deploy --stage dev",
+    "remove": "sst remove",
+    "sst:shell": "sst shell"
+  },
+  "keywords": [
+    "chatbot",
+    "nestjs",
+    "openai",
+    "pharmacy",
+    "postgresql",
+    "mikro-orm"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "sst": "^3.0.0"
+  }
+}
