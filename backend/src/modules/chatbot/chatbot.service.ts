@@ -162,7 +162,7 @@ export class ChatbotService {
     console.log("aiResponse", aiResponse)
     // Process tool calls (function calls)
     let assistantContent = aiResponse.content;
-    const functionResults: string[] = [];
+    const functionResults: { functionName: string; result: string }[] = [];
 
     if (aiResponse.toolCalls && aiResponse.toolCalls.length > 0) {
       for (const toolCall of aiResponse.toolCalls) {
@@ -175,17 +175,21 @@ export class ChatbotService {
           functionArgs,
           conversation,
         );
-        functionResults.push(result);
+        functionResults.push({ functionName, result });
       }
-    }
 
-    // If there were function calls, append their results to the response
-    if (functionResults.length > 0) {
-      if (!assistantContent) {
-        assistantContent = functionResults.join('\n\n');
-      } else {
-        assistantContent += '\n\n' + functionResults.join('\n\n');
-      }
+      // Generate a natural language response after executing functions
+      // This sends the function results back to OpenAI to get a conversational response
+      assistantContent = await this.aiService.generateResponseAfterFunctionCalls(
+        conversation.messages.getItems(),
+        userMessage,
+        pharmacy,
+        !conversation.isReturningPharmacy,
+        aiResponse.toolCalls,
+        functionResults,
+      );
+
+      this.logger.log('Generated response after function calls');
     }
 
     // Save assistant message
@@ -395,8 +399,7 @@ export class ChatbotService {
 
   private handleHighlightRxBenefits(args: HighlightRxBenefitsArgs): string {
     const tier = args.volume_tier;
-
-    return this.pharmacyService.getVolumeMessage(tier as any);
+    return this.aiService.getVolumeMessage(tier);
   }
 
   private maskPhone(phone: string): string {

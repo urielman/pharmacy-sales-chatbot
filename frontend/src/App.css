@@ -192,16 +192,25 @@ body {
 
 @media (max-width: 968px) {
   .chat-screen {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     height: auto;
   }
 
   .sidebar {
     order: 2;
     margin-top: 24px;
+    max-height: none;
+    overflow-y: visible;
   }
 
   .main-chat {
     order: 1;
+    min-height: 500px;
+    max-height: 70vh;
+  }
+
+  .app-container {
+    padding: 12px;
   }
 }

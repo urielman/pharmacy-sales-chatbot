@@ -58,6 +58,56 @@ export class AiService {
   }
 
   /**
+   * Generate a natural language response after function calls have been executed
+   * This follows the OpenAI function calling pattern where we send tool results back to get a response
+   */
+  async generateResponseAfterFunctionCalls(
+    conversationHistory: Message[],
+    userMessage: string,
+    pharmacy: Pharmacy | undefined,
+    isNewLead: boolean,
+    toolCalls: any[],
+    functionResults: { functionName: string; result: string }[],
+  ): Promise<string> {
+    const messages = this.buildMessages(conversationHistory, userMessage, pharmacy, isNewLead);
+
+    // Add the assistant's message with tool calls
+    messages.push({
+      role: 'assistant',
+      content: null,
+      tool_calls: toolCalls,
+    });
+
+    // Add tool results
+    for (let i = 0; i < functionResults.length; i++) {
+      messages.push({
+        role: 'tool',
+        tool_call_id: toolCalls[i].id,
+        content: functionResults[i].result || 'Function executed successfully',
+      });
+    }
+
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-4',
+        messages,
+        tools: AI_FUNCTIONS,
+        temperature: 0.7,
+        max_tokens: 500,
+      });
+
+      const content = response.choices[0].message.content ||
+        'Thank you for that information. How else can I help you today?';
+
+      return content;
+    } catch (error) {
+      this.logger.error(`Error generating response after function calls: ${error.message}`);
+      // Return a generic fallback
+      return 'Thank you for that information. How can I continue to assist you?';
+    }
+  }
+
+  /**
    * Get a professional introduction to Pharmesol's services
    * This is a reusable method that can be called anywhere in the conversation
    * when we need to introduce or explain what Pharmesol does
@@ -260,7 +310,7 @@ Don't ask all questions at once - make it conversational and natural.
     return 'UNKNOWN';
   }
 
-  private getVolumeMessage(tier: string): string {
+  getVolumeMessage(tier: string): string {
     switch (tier) {
       case 'HIGH':
         return 'With your high prescription volume, our AI automation can handle the influx of patient calls and messages, freeing your staff to focus on in-person care and complex pharmaceutical services.';

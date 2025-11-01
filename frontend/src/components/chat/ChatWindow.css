@@ -141,3 +141,22 @@
   background: #ccc;
   cursor: not-allowed;
 }
+
+@media (max-width: 968px) {
+  .chat-window {
+    height: 100%;
+    max-height: 70vh;
+  }
+
+  .message {
+    max-width: 85%;
+  }
+
+  .message-input-form {
+    padding: 12px;
+  }
+
+  .send-button {
+    padding: 10px 16px;
+  }
+}

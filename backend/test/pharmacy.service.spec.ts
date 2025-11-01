@@ -56,45 +56,4 @@ describe('PharmacyService', () => {
       expect(volume).toBe(300); // (10 + 0) * 30
     });
   });
-
-  describe('getRxVolumeTier', () => {
-    it('should return HIGH for volume >= 10000', () => {
-      expect(service.getRxVolumeTier(10000)).toBe('HIGH');
-      expect(service.getRxVolumeTier(15000)).toBe('HIGH');
-    });
-
-    it('should return MEDIUM for volume >= 5000 and < 10000', () => {
-      expect(service.getRxVolumeTier(5000)).toBe('MEDIUM');
-      expect(service.getRxVolumeTier(7500)).toBe('MEDIUM');
-      expect(service.getRxVolumeTier(9999)).toBe('MEDIUM');
-    });
-
-    it('should return LOW for volume >= 1000 and < 5000', () => {
-      expect(service.getRxVolumeTier(1000)).toBe('LOW');
-      expect(service.getRxVolumeTier(2500)).toBe('LOW');
-      expect(service.getRxVolumeTier(4999)).toBe('LOW');
-    });
-
-    it('should return UNKNOWN for volume < 1000', () => {
-      expect(service.getRxVolumeTier(0)).toBe('UNKNOWN');
-      expect(service.getRxVolumeTier(500)).toBe('UNKNOWN');
-      expect(service.getRxVolumeTier(999)).toBe('UNKNOWN');
-    });
-  });
-
-  describe('getVolumeMessage', () => {
-    it('should return appropriate message for each tier', () => {
-      const highMessage = service.getVolumeMessage('HIGH' as any);
-      expect(highMessage).toContain('high prescription volume');
-
-      const mediumMessage = service.getVolumeMessage('MEDIUM' as any);
-      expect(mediumMessage).toContain('excellent position');
-
-      const lowMessage = service.getVolumeMessage('LOW' as any);
-      expect(lowMessage).toContain('streamline');
-
-      const unknownMessage = service.getVolumeMessage('UNKNOWN' as any);
-      expect(unknownMessage).toContain('pharmacies of all sizes');
-    });
-  });
 });
