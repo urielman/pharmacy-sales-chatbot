@@ -25,12 +25,12 @@
 }
 
 .action-button.email {
-  background: #007bff;
+  background: #fb923c;
   color: white;
 }
 
 .action-button.email:hover:not(:disabled) {
-  background: #0056b3;
+  background: #f97316;
 }
 
 .action-button:disabled {
@@ -92,7 +92,7 @@
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: #fb923c;
 }
 
 .form-group.checkbox label {
@@ -134,12 +134,12 @@
 }
 
 .btn-confirm {
-  background: #007bff;
+  background: #fb923c;
   color: white;
 }
 
 .btn-confirm:hover:not(:disabled) {
-  background: #0056b3;
+  background: #f97316;
 }
 
 .btn-confirm:disabled {
