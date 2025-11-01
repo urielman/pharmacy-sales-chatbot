@@ -80,6 +80,64 @@ export class AiService {
     }
   }
 
+  async generateConversationContinuation(
+    conversationHistory: Message[],
+    pharmacy: Pharmacy | null,
+    conversationState: string,
+  ): Promise<string> {
+    // Build a summary of the previous conversation
+    const recentMessages = conversationHistory.slice(-6); // Last 3 exchanges
+
+    const systemPrompt = `You are a professional sales assistant for Pharmesol resuming a previous conversation.
+
+Your task: Generate a brief, friendly message that:
+1. Acknowledges you're continuing from a previous conversation
+2. Provides a 1-sentence summary of what was discussed
+3. Smoothly transitions to continue helping them
+
+Guidelines:
+- Be warm and professional
+- Keep it concise (2-3 sentences total)
+- Reference specific details from the conversation if available
+- Match the conversation stage: ${conversationState}
+- Don't repeat information unnecessarily
+
+${pharmacy ? `Speaking with: ${pharmacy.name}${pharmacy.contactPerson ? ` (${pharmacy.contactPerson})` : ''}` : 'New lead conversation'}`;
+
+    const messages: ChatCompletionMessageParam[] = [
+      {
+        role: 'system',
+        content: systemPrompt,
+      },
+    ];
+
+    // Add recent conversation history
+    for (const msg of recentMessages) {
+      if (msg.role === MessageRole.SYSTEM) continue;
+
+      messages.push({
+        role: msg.role === MessageRole.USER ? 'user' : 'assistant',
+        content: msg.content,
+      });
+    }
+
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-4',
+        messages,
+        temperature: 0.7,
+        max_tokens: 150,
+      });
+
+      return response.choices[0].message.content ||
+        'Welcome back! How can I continue to assist you today?';
+    } catch (error) {
+      this.logger.error(`Error generating conversation continuation: ${error.message}`);
+      // Fallback message
+      return 'Welcome back! I recall our previous conversation. How can I help you today?';
+    }
+  }
+
   private buildMessages(
     conversationHistory: Message[],
     userMessage: string,

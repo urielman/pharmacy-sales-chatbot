@@ -61,10 +61,21 @@ export class ChatbotService {
         ? await this.leadRepo.findOne({ phoneNumber: normalized })
         : null;
 
+      // Generate contextual continuation message using AI
+      const continuationMessage = await this.aiService.generateConversationContinuation(
+        conversation.messages.getItems(),
+        conversation.pharmacyData,
+        conversation.state,
+      );
+
+      this.logger.log(
+        `Continuing conversation ${conversation.id} for phone ${this.maskPhone(normalized)}`,
+      );
+
       return {
         conversationId: conversation.id,
         isNewConversation: false,
-        message: 'Continuing previous conversation',
+        message: continuationMessage,
         pharmacy: conversation.pharmacyData || null,
         lead: lead || null,
         state: conversation.state,
