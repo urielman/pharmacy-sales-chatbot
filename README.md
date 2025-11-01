@@ -18,11 +18,24 @@ An intelligent inbound sales chatbot for pharmacies, powered by OpenAI's GPT-4 w
 
 ### Key Differentiators
 
-1. **Database Persistence**: PostgreSQL + MikroORM (vs in-memory storage)
-2. **Function Calling**: OpenAI structured outputs for precise actions
-3. **State Machine Pattern**: Event-driven conversation state management
-4. **API Response Caching**: 5-minute cache for pharmacy lookups
-5. **Type-Safe**: Full TypeScript implementation across frontend and backend
+1. **State Machine Pattern**: Event-driven conversation state management
+   ```
+   INITIAL_GREETING → [PHARMACY_FOUND] → PHARMACY_IDENTIFIED
+                    ↓ [PHARMACY_NOT_FOUND]
+                    → COLLECTING_LEAD_INFO → [INFO_COLLECTED] → DISCUSSING_SERVICES
+   ```
+   Provides clear conversation flow control, easy debugging, and scalable multi-step interactions.
+
+2. **Persistent Database (PostgreSQL + MikroORM)**:
+   - **Lead Collection**: Gracefully stores new pharmacy lead information in the database
+   - **Dual Lead Handling**: Manages both new leads AND existing pharmacies from external API
+   - **Conversation Context**: Retrieves previous conversation history for the same phone number
+   - **Analytics & Insights**: Enables future analysis of conversation patterns and conversion metrics
+   - **Audit Trail**: Complete history of all interactions for compliance and quality assurance
+
+3. **OpenAI Function Calling**: Structured outputs for precise, type-safe actions
+
+4. **Type-Safe**: Full TypeScript implementation across frontend and backend
 
 ### Tech Stack
 
@@ -229,7 +242,6 @@ INITIAL_GREETING → [PHARMACY_FOUND] → PHARMACY_IDENTIFIED
 ### 4. Pharmacy API Integration
 
 - Normalizes phone numbers for flexible matching
-- Caches responses for 5 minutes
 - Calculates monthly Rx volume from daily prescriptions
 - Volume-based tier messaging (HIGH/MEDIUM/LOW)
 
@@ -265,174 +277,69 @@ npm test
 
 ## 🚢 Deployment & Monitoring
 
-### How would you deploy this LLM response generation component over AWS?
+### Q: How would you deploy this LLM response generation component over AWS?
 
-**Deployment Architecture using SST (Serverless Stack):**
-
-This application uses **SST v3** for Infrastructure as Code deployment on AWS.
+**A:** Using **SST v3 (Serverless Stack)** for Infrastructure as Code deployment:
 
 **Architecture Components:**
 
-1. **Backend API**
-   - **AWS Lambda** running NestJS application
-   - **Function URL** for direct HTTP access
-   - **Runtime**: Node.js 20.x
-   - **Memory**: 1024 MB, Timeout: 30s
-   - Serverless Express adapter for NestJS compatibility
-   - Auto-scaling based on request volume
+1. **Backend API**: AWS Lambda running NestJS (Node.js 20.x, 1024 MB, 30s timeout) with auto-scaling
+2. **Database**: Aurora Serverless v2 PostgreSQL (auto-scales 0.5-4 ACU, multi-AZ)
+3. **Frontend**: S3 + CloudFront CDN with HTTPS
+4. **Secrets**: AWS Secrets Manager for OpenAI API key
+5. **IaC**: SST v3 TypeScript configuration with separate dev/staging/production stages
 
-2. **Database**
-   - **Aurora Serverless v2 PostgreSQL**
-   - Auto-scaling from 0.5 to 4 ACU (Aurora Capacity Units)
-   - Scales down to zero during inactivity (cost savings)
-   - Automated backups with point-in-time recovery
-   - Multi-AZ deployment for high availability
-
-3. **Frontend**
-   - **S3** for static React build assets
-   - **CloudFront CDN** for global distribution and caching
-   - HTTPS enforced with AWS Certificate Manager
-   - Environment variables injected at build time
-
-4. **Secrets Management**
-   - **AWS Secrets Manager** for OpenAI API key
-   - Automatic rotation capabilities
-   - IAM-based access control
-
-5. **Infrastructure as Code**
-   - **SST v3** configuration in TypeScript (`sst.config.ts`)
-   - Declarative resource definitions
-   - Separate stages for dev/staging/production
-   - Automatic IAM role and permission management
-
-**Deployment Commands:**
+**Deployment:**
 ```bash
-# Development
-npm run deploy:dev
-
-# Production
-npm run deploy
-
-# Remove stack
-npm run remove
+npm run deploy:dev    # Development
+npm run deploy        # Production
 ```
 
-**CI/CD Integration:**
-- GitHub Actions workflow for automated deployments
-- Test execution before deployment
-- Database migrations via SST shell
-- Rollback capabilities using Lambda versions
+**CI/CD**: GitHub Actions with automated testing, database migrations, and Lambda version rollbacks.
 
-**See `DEPLOYMENT.md` for detailed deployment instructions.**
+**See `DEPLOYMENT.md` for detailed instructions.**
 
-### How would you monitor and evaluate its performance in production?
+### Q: How would you monitor and evaluate its performance when it's in production?
 
-**Monitoring Strategy:**
+**A:** Multi-layered monitoring strategy:
 
-#### 1. Application Performance Metrics (CloudWatch + DataDog)
+**1. Application Performance (CloudWatch + DataDog)**
+- Latency: P50/P95/P99 response times, OpenAI API duration, database query time
+- Throughput: Requests/sec, conversations/hour, concurrent connections
+- Error Rates: HTTP 5xx, OpenAI failures, database errors
 
-**Latency Metrics:**
-- P50/P95/P99 response times for API endpoints
-- OpenAI API call duration
-- Database query execution time
+**2. LLM-Specific Metrics**
+- Token usage and cost per conversation
+- Function calling accuracy (% valid parameters)
+- Conversation quality (completion rate, lead information completeness)
 
-**Throughput:**
-- Requests per second
-- Conversations initiated per hour
-- Concurrent connections
-
-**Error Rates:**
-- HTTP 5xx errors
-- OpenAI API failures (rate limits, timeouts)
-- Database connection errors
-
-#### 2. LLM-Specific Metrics
-
-**Token Usage:**
-- Average tokens per conversation
-- Cost per conversation (track spending)
-- Context window utilization
-
-**Function Calling Accuracy:**
-- % of function calls with valid parameters
-- % of conversations requiring human handoff
-
-**Conversation Quality:**
-- Average conversation length (messages)
-- Completion rate (conversations reaching followup/completed state)
-- Lead information completeness score
-
-#### 3. Business Metrics
-
-**Conversion Funnel:**
+**3. Business Metrics**
 - Returning pharmacy recognition rate
-- New lead → email sent conversion
-- New lead → callback scheduled conversion
+- New lead conversion (email sent, callback scheduled)
+- High-volume pharmacy engagement
 
-**Pharmacy Engagement:**
-- High-volume pharmacy contact frequency
-- Average response time to callbacks
+**4. Logging & Tracing**
+- Structured logs (Winston + CloudWatch) with conversation metadata, tokens used, latency
+- Distributed tracing (AWS X-Ray) across API → Backend → OpenAI → Database
 
-#### 4. Logging & Tracing
+**5. Alerting (PagerDuty + Slack)**
+- Critical: OpenAI error rate >5%, database pool exhausted, cost anomalies
+- Warning: P95 latency >3s, pharmacy API unavailable
 
-**Structured Logging (Winston + CloudWatch Logs):**
-```json
-{
-  "timestamp": "2025-10-31T10:30:00Z",
-  "level": "info",
-  "conversationId": "12345",
-  "phoneNumber": "555-***-1234",
-  "event": "ai_function_called",
-  "function": "schedule_callback",
-  "latency_ms": 234,
-  "tokens_used": 145
-}
-```
+**6. Quality Assurance**
+- Synthetic monitoring with daily test conversations
+- Weekly manual review of random samples (tone, accuracy, hallucinations)
+- A/B testing system prompts
+- AWS Cost Explorer and OpenAI usage dashboards
 
-**Distributed Tracing (AWS X-Ray):**
-- Trace requests through: API Gateway → Backend → OpenAI → Database
-- Identify bottlenecks in conversation flow
-
-#### 5. Alerting (PagerDuty + Slack)
-
-**Critical Alerts:**
-- OpenAI API error rate > 5%
-- Database connection pool exhausted
-- ECS service unhealthy for > 2 minutes
-- Cost anomaly (OpenAI usage spike)
-
-**Warning Alerts:**
-- P95 latency > 3 seconds
-- Pharmacy API unavailable
-- Cache hit rate < 70%
-
-#### 6. Quality Assurance
-
-**Automated Testing in Production:**
-- Synthetic monitoring (DataDog Synthetics)
-- Daily test conversations with known phone numbers
-- Assert expected responses and state transitions
-
-**LLM Output Evaluation:**
-- Weekly manual review of random conversation samples
-- Checklist: Tone, accuracy, no hallucinations
-- A/B testing different system prompts
-
-**Cost Monitoring:**
-- AWS Cost Explorer tags by environment/service
-- OpenAI usage dashboard tracking cost per conversation
-- Token efficiency trends
-
-#### 7. Continuous Improvement
-
-- Monthly performance review meetings
-- Quarterly LLM model upgrades (GPT-4 → GPT-4.5, etc.)
+**7. Continuous Improvement**
+- Monthly performance reviews
+- Quarterly LLM model upgrades
 - Iterative prompt engineering based on production data
 
 ## 🎓 Technical Decisions
 
 ### Why PostgreSQL + MikroORM?
-- Aligns with Pharmesol's tech stack preferences
 - ACID compliance for conversation history
 - MikroORM provides type-safe database queries
 - Easy migrations and schema management
@@ -458,9 +365,8 @@ This solution demonstrates production-ready patterns:
 1. **PostgreSQL persistence** for conversation history and analytics
 2. **OpenAI function calling** for structured, type-safe AI interactions
 3. **State machine pattern** for explicit conversation flow management
-4. **API response caching** to reduce external calls and improve performance
-5. **Comprehensive testing** with real database integration
-6. **SST deployment** for Infrastructure as Code on AWS
+4. **Comprehensive testing** with real database integration
+5. **SST deployment** for Infrastructure as Code on AWS
 
 ### Security Considerations
 
@@ -481,7 +387,3 @@ This solution demonstrates production-ready patterns:
 ## 📄 License
 
 MIT
-
-## 🤝 Contributing
-
-This is a take-home assignment for Pharmesol.

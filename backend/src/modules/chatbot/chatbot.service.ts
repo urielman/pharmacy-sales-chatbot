@@ -159,7 +159,6 @@ export class ChatbotService {
       isNewLead: !conversation.isReturningPharmacy,
     });
 
-    console.log("aiResponse", aiResponse)
     // Process tool calls (function calls)
     let assistantContent = aiResponse.content;
     const functionResults: { functionName: string; result: string }[] = [];

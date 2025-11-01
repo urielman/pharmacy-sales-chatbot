@@ -96,9 +96,6 @@ export class AiService {
         max_tokens: 500,
       });
 
-      console.log('ai response after tool usage', response);
-      console.log('ai response after tool usage response.choices', response.choices);
-
       const content = response.choices[0].message.content ||
         'Thank you for that information. How else can I help you today?';
 
