@@ -96,6 +96,9 @@ export class AiService {
         max_tokens: 500,
       });
 
+      console.log('ai response after tool usage', response);
+      console.log('ai response after tool usage response.choices', response.choices);
+
       const content = response.choices[0].message.content ||
         'Thank you for that information. How else can I help you today?';
 
@@ -138,7 +141,14 @@ export class AiService {
   async generateGreeting(pharmacy: Pharmacy | null): Promise<string> {
     if (pharmacy) {
       // Returning pharmacy greeting with professional presentation (inbound call)
-      let greeting = `Hello! Thank you for calling Pharmesol. I see you're calling from ${pharmacy.name}.`;
+      let greeting = `Hello! Thank you for calling Pharmesol. I see you're calling from ${pharmacy.name}`;
+
+      // Add location if available
+      if (pharmacy.city && pharmacy.state) {
+        greeting += ` in ${pharmacy.city}, ${pharmacy.state}`;
+      }
+
+      greeting += '.';
 
       if (pharmacy.contactPerson) {
         greeting += ` Am I speaking with ${pharmacy.contactPerson}?`;
@@ -288,15 +298,28 @@ Reference their pharmacy details naturally in conversation to show familiarity.
     } else if (isNewLead) {
       // New lead
       prompt += `\n
-This is a new lead. Your goal is to:
-1. Collect basic information about their pharmacy (name, contact person, location)
-2. Understand their prescription volume
-3. Get their email for follow-up
-4. Explain how Pharmesol can help based on their volume
-5. Offer to schedule a callback or send more information
+This is a new lead. Engage them in a natural, consultative conversation:
 
-Use the collect_pharmacy_info function as you learn details about their pharmacy.
-Don't ask all questions at once - make it conversational and natural.
+CONVERSATIONAL APPROACH:
+- Ask ONE question at a time and listen to their response
+- Show genuine interest in their pharmacy and respond to what they share
+- Let information come out naturally through dialogue, not interrogation
+- If they volunteer information, acknowledge it before asking the next question
+- Build rapport - this is a sales conversation, not a form to fill out
+- Never ask multiple questions in the same message
+
+INFORMATION TO GATHER (through natural conversation):
+- Pharmacy name and who you're speaking with
+- Their location (city/state)
+- Prescription volume (helps tailor your pitch)
+- Email for follow-up materials
+
+USE THE collect_pharmacy_info FUNCTION:
+- Call it each time you learn new information (you can call it multiple times)
+- Don't wait to collect everything before calling it
+- Store information as it's shared naturally in conversation
+
+Remember: You're a sales consultant, not a data entry clerk. Focus on understanding their needs and building a relationship while naturally gathering the information needed to help them.
 `;
     }
 
