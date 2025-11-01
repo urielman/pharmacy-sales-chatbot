@@ -67,6 +67,9 @@ describe('ChatbotService - LLM API Integration Tests', () => {
     const mockAiService = {
       generateGreeting: jest.fn(),
       generateResponse: jest.fn(),
+      generateConversationContinuation: jest.fn(),
+      generateResponseAfterFunctionCalls: jest.fn(),
+      getVolumeMessage: jest.fn(),
     };
 
     const mockEmailService = {
@@ -141,14 +144,14 @@ describe('ChatbotService - LLM API Integration Tests', () => {
       pharmacyService.findByPhone.mockResolvedValue(mockPharmacy);
       leadRepo.findOne.mockResolvedValue(null); // No lead for returning pharmacy
       aiService.generateGreeting.mockResolvedValue(
-        'Hello! This is Pharmesol calling for HealthFirst Pharmacy.',
+        'Hello! Thank you for calling Pharmesol. I see you\'re calling from HealthFirst Pharmacy in New York, NY. Am I speaking with John Smith?',
       );
 
       const result = await service.startChat(phoneNumber);
 
       expect(pharmacyService.normalizePhone).toHaveBeenCalledWith(phoneNumber);
       expect(pharmacyService.findByPhone).toHaveBeenCalledWith(normalized);
-      expect(aiService.generateGreeting).toHaveBeenCalledWith(mockPharmacy, normalized);
+      expect(aiService.generateGreeting).toHaveBeenCalledWith(mockPharmacy);
       // leadRepo.findOne should NOT be called when pharmacy is found in external API
       expect(leadRepo.findOne).not.toHaveBeenCalled();
       expect(result.conversationId).toBeDefined();
@@ -176,6 +179,9 @@ describe('ChatbotService - LLM API Integration Tests', () => {
       pharmacyService.normalizePhone.mockReturnValue(normalized);
       conversationRepo.findOne.mockResolvedValue(mockConversation as Conversation);
       leadRepo.findOne.mockResolvedValue(null);
+      aiService.generateConversationContinuation.mockResolvedValue(
+        'Welcome back! I recall we were discussing your pharmacy needs. How can I continue to help you?',
+      );
 
       const result = await service.startChat(phoneNumber);
 
@@ -234,6 +240,9 @@ describe('ChatbotService - LLM API Integration Tests', () => {
       pharmacyService.normalizePhone.mockReturnValue(normalized);
       conversationRepo.findOne.mockResolvedValue(mockConversation as Conversation);
       leadRepo.findOne.mockResolvedValue(mockLead as PharmacyLead);
+      aiService.generateConversationContinuation.mockResolvedValue(
+        'Welcome back! We were discussing your pharmacy needs. How can I help you further?',
+      );
 
       const result = await service.startChat(phoneNumber);
 
@@ -279,6 +288,9 @@ describe('ChatbotService - LLM API Integration Tests', () => {
       };
 
       aiService.generateResponse.mockResolvedValue(mockAiResponse);
+      aiService.generateResponseAfterFunctionCalls.mockResolvedValue(
+        'Great! And how many prescriptions do you process monthly?',
+      );
       leadRepo.findOne.mockResolvedValue(null);
 
       const result = await service.sendMessage(conversationId, userMessage);
@@ -332,6 +344,9 @@ describe('ChatbotService - LLM API Integration Tests', () => {
       };
 
       aiService.generateResponse.mockResolvedValue(mockAiResponse);
+      aiService.generateResponseAfterFunctionCalls.mockResolvedValue(
+        'Perfect! Let me tell you about our solutions.',
+      );
       leadRepo.findOne.mockResolvedValue(null);
       aiService.getVolumeMessage.mockReturnValue(
         'Your volume puts you in an excellent position to benefit from our solutions.',
@@ -377,6 +392,9 @@ describe('ChatbotService - LLM API Integration Tests', () => {
       };
 
       aiService.generateResponse.mockResolvedValue(mockAiResponse);
+      aiService.generateResponseAfterFunctionCalls.mockResolvedValue(
+        'Great! I\'ve scheduled a callback for Tomorrow at 2pm.',
+      );
       leadRepo.findOne.mockResolvedValue(null);
       callbackService.scheduleCallback.mockResolvedValue(undefined);
 
@@ -424,6 +442,9 @@ describe('ChatbotService - LLM API Integration Tests', () => {
       };
 
       aiService.generateResponse.mockResolvedValue(mockAiResponse);
+      aiService.generateResponseAfterFunctionCalls.mockResolvedValue(
+        'Perfect! I\'ve sent detailed information to mark@pharmawin.com.',
+      );
       leadRepo.findOne.mockResolvedValue(null);
       emailService.sendFollowupEmail.mockResolvedValue(undefined);
 
@@ -472,6 +493,9 @@ describe('ChatbotService - LLM API Integration Tests', () => {
       };
 
       aiService.generateResponse.mockResolvedValue(mockAiResponse);
+      aiService.generateResponseAfterFunctionCalls.mockResolvedValue(
+        'Great! And who am I speaking with?',
+      );
       leadRepo.findOne.mockResolvedValue(null);
 
       const result = await service.sendMessage(conversationId, userMessage);
@@ -521,6 +545,9 @@ describe('ChatbotService - LLM API Integration Tests', () => {
       };
 
       aiService.generateResponse.mockResolvedValue(mockAiResponse);
+      aiService.generateResponseAfterFunctionCalls.mockResolvedValue(
+        'Nice to meet you, Mark! How many prescriptions do you process monthly?',
+      );
 
       await service.sendMessage(conversationId, userMessage);
 
@@ -620,6 +647,9 @@ describe('ChatbotService - LLM API Integration Tests', () => {
       };
 
       aiService.generateResponse.mockResolvedValue(mockAiResponse);
+      aiService.generateResponseAfterFunctionCalls.mockResolvedValue(
+        'Perfect! Let me tell you about our solutions.',
+      );
 
       await service.sendMessage(conversationId, userMessage);
 
@@ -671,6 +701,9 @@ describe('ChatbotService - LLM API Integration Tests', () => {
       };
 
       aiService.generateResponse.mockResolvedValue(mockAiResponse);
+      aiService.generateResponseAfterFunctionCalls.mockResolvedValue(
+        'Nice to meet you, Mark!',
+      );
 
       const result = await service.sendMessage(conversationId, userMessage);
 
