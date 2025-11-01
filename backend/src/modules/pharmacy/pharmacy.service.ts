@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
-import { Pharmacy, PharmacyApiResponse, RxVolumeTier } from './pharmacy.interface';
+import { Pharmacy, PharmacyApiResponse } from './pharmacy.interface';
 
 interface CacheEntry {
   data: Pharmacy;
@@ -83,25 +83,6 @@ export class PharmacyService {
     return dailyTotal * 30; // Monthly estimate
   }
 
-  getRxVolumeTier(rxVolume: number): RxVolumeTier {
-    if (rxVolume >= 10000) return RxVolumeTier.HIGH;
-    if (rxVolume >= 5000) return RxVolumeTier.MEDIUM;
-    if (rxVolume >= 1000) return RxVolumeTier.LOW;
-    return RxVolumeTier.UNKNOWN;
-  }
-
-  getVolumeMessage(tier: RxVolumeTier): string {
-    switch (tier) {
-      case RxVolumeTier.HIGH:
-        return "With your high prescription volume, our automated dispensing and inventory management systems could significantly improve your workflow efficiency and reduce errors.";
-      case RxVolumeTier.MEDIUM:
-        return "Your pharmacy is in an excellent position to benefit from our advanced prescription management tools and pharmacist support services.";
-      case RxVolumeTier.LOW:
-        return "We can help streamline your processes and position your pharmacy for growth with our scalable solutions.";
-      default:
-        return "Pharmesol offers comprehensive solutions to support pharmacies of all sizes with prescription management, inventory control, and compliance tools.";
-    }
-  }
 
   private transformApiResponse(apiResponse: PharmacyApiResponse): Pharmacy {
     const rxVolume = this.calculateRxVolume(apiResponse.prescriptions);

@@ -57,26 +57,52 @@ export class AiService {
     }
   }
 
-  async generateGreeting(pharmacy: Pharmacy | null, phoneNumber: string): Promise<string> {
-    if (pharmacy) {
-      // Returning pharmacy greeting with fixed presentation
-      let greeting = `Hello! This is Pharmesol calling for ${pharmacy.name}.`;
+  /**
+   * Get a professional introduction to Pharmesol's services
+   * This is a reusable method that can be called anywhere in the conversation
+   * when we need to introduce or explain what Pharmesol does
+   */
+  getPharmesolIntroduction(pharmacy?: Pharmacy): string {
+    const baseIntro = `Pharmesol provides Voice AI and Messaging AI solutions specifically designed for pharmacies. Our AI-enabled pharmacy assistant automates frequent conversations and administrative tasks, helping you handle patient inquiries, prescription refills, appointment scheduling, and other routine interactions efficiently. Using advanced LLM technology tailored for pharmaceutical contexts, we help pharmacies reduce staff workload, improve response times, and deliver exceptional patient service 24/7.`;
 
-      if (pharmacy.contactPerson) {
-        greeting += ` I see we're speaking with ${pharmacy.contactPerson}.`;
+    if (pharmacy && pharmacy.rxVolume) {
+      const monthlyVolume = pharmacy.rxVolume;
+      const volumeTier = this.getRxVolumeTier(monthlyVolume);
+
+      let volumeContext = '';
+
+      if (volumeTier === 'HIGH') {
+        volumeContext = ` With your impressive volume of approximately ${monthlyVolume.toLocaleString()} prescriptions per month, our AI solutions can significantly reduce the administrative burden on your team, allowing them to focus on high-value patient care while we handle routine inquiries and communications at scale.`;
+      } else if (volumeTier === 'MEDIUM') {
+        volumeContext = ` Processing around ${monthlyVolume.toLocaleString()} prescriptions monthly, you're in an excellent position to benefit from AI automation. Our solutions can help you manage growing patient communication demands without proportionally increasing staff, positioning your pharmacy for efficient growth.`;
+      } else if (volumeTier === 'LOW') {
+        volumeContext = ` Even at ${monthlyVolume.toLocaleString()} prescriptions per month, our AI solutions can free up your team's time by handling routine calls and messages, allowing you to deliver more personalized service to your patients while keeping operational costs manageable.`;
       }
 
-      greeting += ` How can I help you today?`;
+      return baseIntro + volumeContext;
+    }
 
-      // Add volume-specific context
-      const volumeMessage = this.getVolumeMessage(this.getVolumeTier(pharmacy.rxVolume));
-      greeting += ` ${volumeMessage}`;
+    return baseIntro;
+  }
+
+  async generateGreeting(pharmacy: Pharmacy | null): Promise<string> {
+    if (pharmacy) {
+      // Returning pharmacy greeting with professional presentation (inbound call)
+      let greeting = `Hello! Thank you for calling Pharmesol. I see you're calling from ${pharmacy.name}.`;
+
+      if (pharmacy.contactPerson) {
+        greeting += ` Am I speaking with ${pharmacy.contactPerson}?`;
+      }
+
+      greeting += '\n\n';
+
+      // Add professional Pharmesol introduction with volume-specific value proposition
+      greeting += this.getPharmesolIntroduction(pharmacy);
 
       return greeting;
     } else {
-      // New lead greeting with fixed presentation
-      return `Hello! Thank you for calling Pharmesol. We specialize in supporting high prescription volume pharmacies. ` +
-        `May I get your pharmacy's name to better assist you?`;
+      // New lead greeting with professional presentation
+      return `Hello! Thank you for calling Pharmesol.\n\n${this.getPharmesolIntroduction()}\n\nMay I get your pharmacy's name to better understand how we can assist you?`;
     }
   }
 
@@ -173,27 +199,28 @@ ${pharmacy ? `Speaking with: ${pharmacy.name}${pharmacy.contactPerson ? ` (${pha
   }
 
   private buildSystemPrompt(pharmacy: Pharmacy | undefined, isNewLead: boolean): string {
-    let prompt = `You are a professional sales assistant for Pharmesol, a company that provides comprehensive solutions for pharmacies.
+    let prompt = `You are a professional sales assistant for Pharmesol, a company that provides Voice AI and Messaging AI solutions for pharmacies.
 
 Your role:
 - Be professional, friendly, and helpful
 - Listen carefully and respond naturally
 - Use function calls to take actions when appropriate
 - Keep responses concise and conversational (2-3 sentences max)
-- Focus on understanding their needs and how Pharmesol can help
+- Focus on understanding their needs and how Pharmesol's AI solutions can help
 
 Pharmesol Services:
-- Automated dispensing systems
-- Inventory management and optimization
-- Prescription workflow automation
-- Compliance and regulatory support
-- Pharmacist support services
-- Analytics and reporting tools
+- Voice AI and Messaging AI for pharmacies
+- AI-enabled pharmacy assistant that automates conversations
+- Patient inquiry automation (prescription refills, appointment scheduling, etc.)
+- Administrative task automation
+- 24/7 automated patient communication
+- LLM technology specifically designed for pharmaceutical contexts
+- Reduces staff workload and improves patient service
 `;
 
     if (pharmacy) {
       // Returning pharmacy
-      const volumeTier = this.getVolumeTier(pharmacy.rxVolume);
+      const volumeTier = this.getRxVolumeTier(pharmacy.rxVolume);
       prompt += `\n
 Current Pharmacy Information:
 - Name: ${pharmacy.name}
@@ -226,7 +253,7 @@ Don't ask all questions at once - make it conversational and natural.
     return prompt;
   }
 
-  private getVolumeTier(rxVolume: number): string {
+  private getRxVolumeTier(rxVolume: number): string {
     if (rxVolume >= 10000) return 'HIGH';
     if (rxVolume >= 5000) return 'MEDIUM';
     if (rxVolume >= 1000) return 'LOW';
@@ -236,13 +263,13 @@ Don't ask all questions at once - make it conversational and natural.
   private getVolumeMessage(tier: string): string {
     switch (tier) {
       case 'HIGH':
-        return 'With your high prescription volume, our automated dispensing and inventory management systems could significantly improve workflow efficiency and reduce errors.';
+        return 'With your high prescription volume, our AI automation can handle the influx of patient calls and messages, freeing your staff to focus on in-person care and complex pharmaceutical services.';
       case 'MEDIUM':
-        return 'Your pharmacy is in an excellent position to benefit from our prescription management tools and pharmacist support services.';
+        return 'Your pharmacy is in an excellent position to benefit from AI-powered communication automation that scales with your growing patient base without increasing administrative overhead.';
       case 'LOW':
-        return 'We can help streamline your processes and position your pharmacy for growth with our scalable solutions.';
+        return 'Our AI solutions can help you deliver responsive patient service 24/7 while keeping operational costs manageable as you grow.';
       default:
-        return 'Pharmesol offers comprehensive solutions to support pharmacies of all sizes with prescription management, inventory control, and compliance tools.';
+        return 'Pharmesol offers Voice AI and Messaging AI solutions to help pharmacies of all sizes automate patient communications and administrative tasks.';
     }
   }
 }

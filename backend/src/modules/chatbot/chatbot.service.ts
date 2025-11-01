@@ -107,7 +107,7 @@ export class ChatbotService {
     await this.em.persistAndFlush(conversation);
 
     // Generate greeting
-    const greeting = await this.aiService.generateGreeting(pharmacy, normalized);
+    const greeting = await this.aiService.generateGreeting(pharmacy);
 
     // Save greeting message
     const greetingMessage = new Message();
