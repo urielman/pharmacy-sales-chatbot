@@ -55,15 +55,29 @@ export class ChatbotService {
     if (conversation) {
       // Return existing conversation
       await this.em.populate(conversation, ['messages']);
+
+      // Fetch lead data if this is a new lead
+      const lead = !conversation.isReturningPharmacy
+        ? await this.leadRepo.findOne({ phoneNumber: normalized })
+        : null;
+
       return {
         conversationId: conversation.id,
         isNewConversation: false,
         message: 'Continuing previous conversation',
+        pharmacy: conversation.pharmacyData || null,
+        lead: lead || null,
+        state: conversation.state,
       };
     }
 
     // Look up pharmacy
     const pharmacy = await this.pharmacyService.findByPhone(normalized);
+
+    // Fetch existing lead data if any
+    const lead = !pharmacy
+      ? await this.leadRepo.findOne({ phoneNumber: normalized })
+      : null;
 
     // Create new conversation
     conversation = new Conversation();
@@ -101,6 +115,7 @@ export class ChatbotService {
       isNewConversation: true,
       message: greeting,
       pharmacy: pharmacy || null,
+      lead: lead || null,
       state: conversation.state,
     };
   }
@@ -133,6 +148,7 @@ export class ChatbotService {
       isNewLead: !conversation.isReturningPharmacy,
     });
 
+    console.log("aiResponse", aiResponse)
     // Process tool calls (function calls)
     let assistantContent = aiResponse.content;
     const functionResults: string[] = [];
@@ -175,12 +191,18 @@ export class ChatbotService {
 
     await this.em.persistAndFlush(assistantMsg);
 
+    // Fetch updated lead data if this is a new lead
+    const lead = !conversation.isReturningPharmacy
+      ? await this.leadRepo.findOne({ phoneNumber: conversation.phoneNumber })
+      : null;
+
     this.logger.log(`Conversation ${conversationId}: User message processed`);
 
     return {
       message: assistantMsg.content,
       state: conversation.state,
       pharmacy: conversation.pharmacyData,
+      lead: lead || null,
     };
   }
 

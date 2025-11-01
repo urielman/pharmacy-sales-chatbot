@@ -16,6 +16,21 @@ export interface Pharmacy {
   email: string | null;
 }
 
+export interface PharmacyLead {
+  id: number;
+  phoneNumber: string;
+  pharmacyName?: string;
+  contactPerson?: string;
+  email?: string;
+  estimatedRxVolume?: number;
+  address?: string;
+  city?: string;
+  state?: string;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Conversation {
   id: number;
   phoneNumber: string;
@@ -30,6 +45,7 @@ export interface StartChatResponse {
   isNewConversation: boolean;
   message: string;
   pharmacy: Pharmacy | null;
+  lead?: PharmacyLead | null;
   state: string;
 }
 
@@ -37,4 +53,5 @@ export interface SendMessageResponse {
   message: string;
   state: string;
   pharmacy: Pharmacy | null;
+  lead?: PharmacyLead | null;
 }

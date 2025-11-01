@@ -46,7 +46,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
         onClick={() => setShowCallbackModal(true)}
         disabled={disabled}
       >
-        📞 Schedule Callback
+        Schedule Callback
       </button>
 
       <button
@@ -54,7 +54,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
         onClick={() => setShowEmailModal(true)}
         disabled={disabled}
       >
-        📧 Send Email
+        Send Email
       </button>
 
       {showCallbackModal && (

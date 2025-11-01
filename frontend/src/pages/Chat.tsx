@@ -19,6 +19,7 @@ export const Chat: React.FC = () => {
     conversationId,
     messages,
     pharmacy,
+    lead,
     loading,
     error,
     startChat,
@@ -94,7 +95,7 @@ export const Chat: React.FC = () => {
         {hasStarted && conversationId && (
           <div className="chat-screen">
             <div className="sidebar">
-              <PharmacyInfo pharmacy={pharmacy} />
+              <PharmacyInfo pharmacy={pharmacy} lead={lead} />
               <ActionButtons
                 onScheduleCallback={scheduleCallback}
                 onSendEmail={sendEmail}

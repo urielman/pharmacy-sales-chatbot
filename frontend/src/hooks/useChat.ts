@@ -1,11 +1,12 @@
 import { useState, useCallback } from 'react';
 import { chatbotAPI } from '../services/api.service';
-import { Message, Pharmacy } from '../types';
+import { Message, Pharmacy, PharmacyLead } from '../types';
 
 export const useChat = () => {
   const [conversationId, setConversationId] = useState<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [pharmacy, setPharmacy] = useState<Pharmacy | null>(null);
+  const [lead, setLead] = useState<PharmacyLead | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,6 +19,7 @@ export const useChat = () => {
 
       setConversationId(response.conversationId);
       setPharmacy(response.pharmacy);
+      setLead(response.lead || null);
 
       // Add greeting message
       const greetingMessage: Message = {
@@ -68,6 +70,11 @@ export const useChat = () => {
         // Update pharmacy data if provided
         if (response.pharmacy) {
           setPharmacy(response.pharmacy);
+        }
+
+        // Update lead data if provided
+        if (response.lead) {
+          setLead(response.lead);
         }
 
         return response;
@@ -168,6 +175,7 @@ export const useChat = () => {
     conversationId,
     messages,
     pharmacy,
+    lead,
     loading,
     error,
     startChat,
