@@ -20,7 +20,7 @@ body {
 }
 
 .app-header {
-  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
   color: white;
   padding: 24px;
   text-align: center;
@@ -92,7 +92,7 @@ body {
 
 .quick-start-btn:hover {
   background: #e9ecef;
-  border-color: #007bff;
+  border-color: #fb923c;
 }
 
 .custom-input-section {
@@ -113,12 +113,12 @@ body {
 
 .phone-input:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: #fb923c;
 }
 
 .start-btn {
   padding: 12px 24px;
-  background: #007bff;
+  background: #fb923c;
   color: white;
   border: none;
   border-radius: 6px;
@@ -129,7 +129,7 @@ body {
 }
 
 .start-btn:hover:not(:disabled) {
-  background: #0056b3;
+  background: #f97316;
 }
 
 .start-btn:disabled {
@@ -141,12 +141,16 @@ body {
   display: grid;
   grid-template-columns: 350px 1fr;
   gap: 24px;
-  height: calc(100vh - 200px);
+  flex: 1;
+  min-height: 0;
 }
 
 .sidebar {
   display: flex;
   flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  max-height: 100%;
 }
 
 .conversation-info {
@@ -174,6 +178,7 @@ body {
 .main-chat {
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .error-message {

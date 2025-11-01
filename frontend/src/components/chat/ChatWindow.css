@@ -1,7 +1,7 @@
 .chat-window {
   display: flex;
   flex-direction: column;
-  height: 600px;
+  height: 100%;
   border: 1px solid #ddd;
   border-radius: 8px;
   overflow: hidden;
@@ -43,7 +43,7 @@
 }
 
 .message.user .message-content {
-  background: #007bff;
+  background: #fb923c;
   color: white;
   border-bottom-right-radius: 4px;
 }
@@ -117,13 +117,13 @@
 }
 
 .message-input:focus {
-  border-color: #007bff;
+  border-color: #fb923c;
 }
 
 .send-button {
   margin-left: 8px;
   padding: 10px 24px;
-  background: #007bff;
+  background: #fb923c;
   color: white;
   border: none;
   border-radius: 20px;
@@ -134,7 +134,7 @@
 }
 
 .send-button:hover:not(:disabled) {
-  background: #0056b3;
+  background: #f97316;
 }
 
 .send-button:disabled {
