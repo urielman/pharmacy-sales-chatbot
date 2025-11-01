@@ -298,63 +298,13 @@ npm test
 
 ### Q: How would you deploy this LLM response generation component over AWS?
 
-**A:** Using **SST v3 (Serverless Stack)** for Infrastructure as Code deployment:
-
-**Architecture Components:**
-
-1. **Backend API**: AWS Lambda running NestJS (Node.js 20.x, 1024 MB, 30s timeout) with auto-scaling
-2. **Database**: Aurora Serverless v2 PostgreSQL (auto-scales 0.5-4 ACU, multi-AZ)
-3. **Frontend**: S3 + CloudFront CDN with HTTPS
-4. **Secrets**: AWS Secrets Manager for OpenAI API key
-5. **IaC**: SST v3 TypeScript configuration with separate dev/staging/production stages
-
-**Deployment:**
-```bash
-npm run deploy:dev    # Development
-npm run deploy        # Production
-```
-
-**CI/CD**: GitHub Actions with automated testing, database migrations, and Lambda version rollbacks.
+**A:** For deploying this application on AWS, I'd use SST (Serverless Stack) v3 for infrastructure as code. The backend would run on AWS Lambda with the NestJS application wrapped using the serverless-express adapter, which converts the Express-based NestJS app into a Lambda-compatible handler. Lambda automatically scales based on incoming requests without manual configuration. The database would be Aurora Serverless v2 PostgreSQL. The React frontend would be deployed as a static site using SST's StaticSite component, which handles the build process and serves the files through S3 and CloudFront as a CDN for fast global delivery. Sensitive information like the OpenAI API key would be stored in AWS Secrets Manager. The entire infrastructure is defined in TypeScript through SST, making it easy to manage separate environments for development, staging, and production. Deployment is straightforward with npm commands, and I'd set up GitHub Actions for CI/CD to automatically run tests, execute database migrations, and deploy on successful builds.
 
 **See `DEPLOYMENT.md` for detailed instructions.**
 
 ### Q: How would you monitor and evaluate its performance when it's in production?
 
-**A:** Multi-layered monitoring strategy:
-
-**1. Application Performance (CloudWatch + DataDog)**
-- Latency: P50/P95/P99 response times, OpenAI API duration, database query time
-- Throughput: Requests/sec, conversations/hour, concurrent connections
-- Error Rates: HTTP 5xx, OpenAI failures, database errors
-
-**2. LLM-Specific Metrics**
-- Token usage and cost per conversation
-- Function calling accuracy (% valid parameters)
-- Conversation quality (completion rate, lead information completeness)
-
-**3. Business Metrics**
-- Returning pharmacy recognition rate
-- New lead conversion (email sent, callback scheduled)
-- High-volume pharmacy engagement
-
-**4. Logging & Tracing**
-- Structured logs (Winston + CloudWatch) with conversation metadata, tokens used, latency
-- Distributed tracing (AWS X-Ray) across API → Backend → OpenAI → Database
-
-**5. Alerting (PagerDuty + Slack)**
-- Critical: OpenAI error rate >5%, database pool exhausted, cost anomalies
-- Warning: P95 latency >3s, pharmacy API unavailable
-
-**6. Quality Assurance**
-- Synthetic monitoring with daily test conversations
-- Weekly manual review of random samples (tone, accuracy, hallucinations)
-- A/B testing system prompts
-- AWS Cost Explorer and OpenAI usage dashboards
-
-**7. Continuous Improvement**
-- Monthly performance reviews
-- Quarterly LLM model upgrades
-- Iterative prompt engineering based on production data
+**A:** Monitoring would focus on three main areas. First, application performance using CloudWatch and potentially DataDog to track response times (P50, P95, P99), error rates, and throughput metrics like conversations per hour. Second, LLM-specific metrics including token usage to track costs, function calling accuracy to ensure the AI is properly executing actions, and conversation quality metrics like completion rates and lead information completeness. Third, business metrics such as pharmacy recognition rates and conversion rates for email and callback requests. I'd implement structured logging with Winston to capture detailed conversation metadata and use AWS X-Ray for distributed tracing to identify bottlenecks. Alerting through PagerDuty or Slack would notify the team of critical issues like high OpenAI error rates or database problems. For quality assurance, I'd run daily synthetic tests simulating conversations and conduct weekly manual reviews of random conversation samples to check for tone, accuracy, and any hallucinations. Cost monitoring through AWS Cost Explorer and OpenAI usage dashboards would help track spending trends and optimize token usage over time.
 
 ## 🎓 Technical Decisions
 
