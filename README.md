@@ -2,6 +2,25 @@
 
 An intelligent inbound sales chatbot for pharmacies, powered by OpenAI's GPT-4 with function calling capabilities. Built with NestJS, React, PostgreSQL, and MikroORM.
 
+## 📱 Application Overview
+
+<table>
+<tr>
+<td width="70%">
+
+### Desktop
+![Desktop Demo](./assets/pharmesol-dektop.gif)
+
+</td>
+<td width="30%">
+
+### Mobile
+<img src="./assets/pharmesol-mobile.gif" alt="Mobile Demo" width="60%"/>
+
+</td>
+</tr>
+</table>
+
 ## 🎯 Features
 
 - **Intelligent Phone Number Recognition**: Identifies returning pharmacies via caller ID lookup
