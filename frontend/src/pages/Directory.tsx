@@ -159,7 +159,7 @@ export const Directory: React.FC = () => {
           Pharmacy Directory
         </h1>
         <p className="text-gray-600">
-          Browse and search our pharmacy database
+          Simulate calls with existing pharmacies from our database to test the AI sales assistant
         </p>
       </div>
 
@@ -186,6 +186,7 @@ export const Directory: React.FC = () => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Actions</TableHead>
               <SortableHeader field="name" label="Name" />
               <SortableHeader field="phone" label="Phone" />
               <SortableHeader field="email" label="Email" />
@@ -194,7 +195,6 @@ export const Directory: React.FC = () => {
               <TableHead>Contact Person</TableHead>
               <TableHead>Address</TableHead>
               <SortableHeader field="rxVolume" label="Rx Volume" />
-              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -207,6 +207,16 @@ export const Directory: React.FC = () => {
             ) : (
               filteredAndSortedPharmacies.map((pharmacy) => (
                 <TableRow key={pharmacy.id}>
+                  <TableCell>
+                    <Button
+                      onClick={() => handleSimulateCall(pharmacy.phone)}
+                      className="bg-[#fb923c] hover:bg-[#f97316] text-white"
+                      size="sm"
+                    >
+                      <Phone className="w-3 h-3 mr-1" />
+                      Simulate Call
+                    </Button>
+                  </TableCell>
                   <TableCell className="font-medium">{pharmacy.name}</TableCell>
                   <TableCell className="whitespace-nowrap">{pharmacy.phone}</TableCell>
                   <TableCell>{pharmacy.email || 'N/A'}</TableCell>
@@ -216,16 +226,6 @@ export const Directory: React.FC = () => {
                   <TableCell>{pharmacy.address || 'N/A'}</TableCell>
                   <TableCell>
                     {getTotalPrescriptions(pharmacy) || 'N/A'}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      onClick={() => handleSimulateCall(pharmacy.phone)}
-                      className="bg-[#fb923c] hover:bg-[#f97316] text-white"
-                      size="sm"
-                    >
-                      <Phone className="w-3 h-3 mr-1" />
-                      Simulate Call
-                    </Button>
                   </TableCell>
                 </TableRow>
               ))
